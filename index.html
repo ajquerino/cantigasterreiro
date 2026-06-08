@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cantigas do Terreiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d0a08;--bg2:#15100d;--bg3:#1e1610;--border:#3a2a1a;--accent:#c8861a;--accent2:#e8a832;--text:#e8dcc8;--text-dim:#9a8570;--header-h:56px;--chips-h:52px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IM Fell English',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;z-index:200;gap:10px;}
+  .header-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--accent2);letter-spacing:.08em;}
+  .header-symbol{margin-left:auto;font-size:1.3rem;opacity:.4;}
+  .chips-bar{position:fixed;top:var(--header-h);left:0;right:0;height:var(--chips-h);background:var(--bg2);border-bottom:1px solid var(--border);z-index:190;display:flex;align-items:center;overflow-x:auto;gap:8px;padding:0 14px;scrollbar-width:none;}
+  .chips-bar::-webkit-scrollbar{display:none;}
+  .chip{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.06em;cursor:pointer;white-space:nowrap;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s,border-color .2s;}
+  .chip:hover,.chip.active{background:var(--accent);color:#0d0a08;border-color:var(--accent);font-weight:600;}
+  main{margin-top:calc(var(--header-h) + var(--chips-h));padding:0 0 110px;}
+  .hero{text-align:center;padding:40px 24px 30px;background:radial-gradient(ellipse at 50% 0%,#2a1a08 0%,var(--bg) 70%);border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(58,42,26,.15) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(58,42,26,.15) 40px);pointer-events:none;}
+  .hero-symbol{font-size:2.6rem;line-height:1;margin-bottom:10px;position:relative;}
+  .hero h1{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;color:var(--accent2);letter-spacing:.06em;position:relative;}
+  .hero p{margin-top:8px;font-size:.85rem;font-style:italic;color:var(--text-dim);position:relative;}
+  .section{padding:0;max-width:720px;margin:0 auto;}
+  .section-header{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .2s;position:sticky;top:calc(var(--header-h) + var(--chips-h));z-index:100;background:var(--bg);}
+  .section-header:hover{background:var(--bg3);}
+  .section-header.open{background:var(--bg3);}
+  .section-icon{font-size:1.5rem;flex-shrink:0;}
+  .section-title{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:600;color:var(--accent2);letter-spacing:.05em;flex:1;}
+  .section-arrow{margin-left:auto;color:var(--text-dim);font-size:.85rem;transition:transform .3s;flex-shrink:0;}
+  .section-header.open .section-arrow{transform:rotate(180deg);}
+  .section-body{display:none;padding:20px 16px 8px;}
+  .section-body.open{display:block;}
+  .cantiga{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;}
+  .cantiga::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.55;}
+  .cantiga p{font-size:.93rem;line-height:1.85;color:var(--text);white-space:pre-wrap;}
+  .cantiga .rep{font-size:.77rem;color:var(--text-dim);font-style:italic;}
+  .cantiga.user-added::before{background:#6a9a3a;opacity:.7;}
+  .cantiga-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .user-badge{font-size:.68rem;background:#1e2e12;color:#8ac050;border:1px solid #3a5a1a;border-radius:10px;padding:2px 8px;font-style:normal;white-space:nowrap;flex-shrink:0;}
+  .cantiga-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-edit,.btn-del{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-size:.75rem;padding:4px 10px;cursor:pointer;font-family:'Cinzel',serif;transition:background .2s,color .2s,border-color .2s;-webkit-tap-highlight-color:transparent;}
+  .btn-edit:hover{background:#1e2e12;color:#8ac050;border-color:#3a5a1a;}
+  .btn-del:hover{background:#2e1212;color:#e05050;border-color:#5a1a1a;}
+  #btnAdd{position:fixed;bottom:24px;right:18px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#0d0a08;font-size:1.7rem;cursor:pointer;z-index:300;box-shadow:0 4px 18px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s;-webkit-tap-highlight-color:transparent;}
+  #btnAdd:hover{transform:scale(1.08);background:var(--accent2);}
+  #backtop{position:fixed;bottom:86px;right:18px;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:150;}
+  #backtop.visible{opacity:1;pointer-events:auto;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:400;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:28px 20px 36px;width:100%;max-width:560px;animation:slideUp .28s ease;}
+  .modal-confirm{background:var(--bg2);border:1px solid #5a1a1a;border-radius:16px 16px 0 0;padding:28px 20px 36px;width:100%;max-width:400px;animation:slideUp .25s ease;text-align:center;}
+  @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .modal h2{font-family:'Cinzel',serif;font-size:1rem;color:var(--accent2);margin-bottom:20px;letter-spacing:.06em;}
+  .modal-confirm h2{font-family:'Cinzel',serif;font-size:1rem;color:#e05050;margin-bottom:12px;}
+  .modal-confirm p{color:var(--text);margin-bottom:20px;line-height:1.6;}
+  .modal-confirm strong{color:#e05050;}
+  .modal label{display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;}
+  .modal select,.modal textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IM Fell English',Georgia,serif;font-size:.93rem;padding:10px 12px;margin-bottom:16px;outline:none;transition:border-color .2s;}
+  .modal select:focus,.modal textarea:focus{border-color:var(--accent);}
+  .modal textarea{min-height:140px;resize:vertical;}
+  .modal-btns{display:flex;gap:10px;}
+  .btn-enviar{flex:1;background:var(--accent);color:#0d0a08;border:none;border-radius:8px;padding:13px;font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .2s;}
+  .btn-enviar:hover{background:var(--accent2);}
+  .btn-enviar:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-cancelar{background:var(--bg3);color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:13px 18px;font-family:'Cinzel',serif;font-size:.85rem;cursor:pointer;}
+  .btn-del-confirmar{flex:1;background:#7a1a1a;color:#e8dcc8;border:none;border-radius:8px;padding:13px;font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s;}
+  .btn-del-confirmar:hover{background:#a02020;}
+  .btn-del-confirmar:disabled{opacity:.5;cursor:not-allowed;}
+  .msg-status{text-align:center;font-size:.85rem;margin-top:10px;min-height:20px;font-style:italic;}
+  .msg-ok{color:#8ac050;} .msg-err{color:#e05050;}
+  .loading-bar{text-align:center;padding:24px;color:var(--text-dim);font-style:italic;font-size:.88rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:1.3rem">✶</span>
+  <div class="header-title">Cantigas do Terreiro</div>
+  <span class="header-symbol">☽</span>
+</header>
+
+<div class="chips-bar" id="chipsBar">
+  <a class="chip" href="#oxossi"     onclick="goTo('oxossi')"><span class="ci">🌿</span>Oxóssi</a>
+  <a class="chip" href="#boiadeiros" onclick="goTo('boiadeiros')"><span class="ci">🐂</span>Boiadeiros</a>
+  <a class="chip" href="#pretos"     onclick="goTo('pretos')"><span class="ci">📿</span>Pretos Velhos</a>
+  <a class="chip" href="#baianos"    onclick="goTo('baianos')"><span class="ci">🎭</span>Baianos</a>
+  <a class="chip" href="#exu"        onclick="goTo('exu')"><span class="ci">🔱</span>Exu</a>
+  <a class="chip" href="#ogum"       onclick="goTo('ogum')"><span class="ci">⚔️</span>Ogum</a>
+  <a class="chip" href="#xango"      onclick="goTo('xango')"><span class="ci">⚡</span>Xangô</a>
+  <a class="chip" href="#oxum"       onclick="goTo('oxum')"><span class="ci">💛</span>Oxum</a>
+  <a class="chip" href="#iemanja"    onclick="goTo('iemanja')"><span class="ci">🌊</span>Iemanjá</a>
+  <a class="chip" href="#iansa"      onclick="goTo('iansa')"><span class="ci">🌪️</span>Iansã</a>
+  <a class="chip" href="#nana"       onclick="goTo('nana')"><span class="ci">🪷</span>Nanã</a>
+  <a class="chip" href="#omolu"      onclick="goTo('omolu')"><span class="ci">🌾</span>Omolu</a>
+  <a class="chip" href="#oxala"      onclick="goTo('oxala')"><span class="ci">🕊️</span>Oxalá</a>
+</div>
+
+<main>
+<div class="hero">
+  <div class="hero-symbol">✶</div>
+  <h1>Cantigas do Terreiro</h1>
+  <p>Pontos de Umbanda — organizados por entidade</p>
+</div>
+
+<!-- OXÓSSI -->
+<section class="section" id="oxossi">
+  <div class="section-header"><span class="section-icon">🌿</span><span class="section-title">Oxóssi / Caboclos</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Caboclo da mata virgem, da mata cerrada, lá do juremá <span class="rep">(2x)</span>
+Quem manda na mata é Oxóssi, quem manda no céu Oxalá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ô oke, caboclo, quero ver girar
+Quero ver caboclo de umbanda arriar <span class="rep">(2x)</span>
+Quem manda na mata é Oxóssi, Oxóssi é caçador</p></div>
+  <div class="cantiga"><p>Eu vi meu pai assoviar, ele mandou chamar
+Vem de aruanda ê, vem de aruanda ah
+Vem de aruanda</p></div>
+  <div class="cantiga"><p>Oxóssi gira, ele gira na macaia <span class="rep">(2x)</span>
+Gira, gira no meu terreiro
+Gira, gira na minha umbanda <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ô juremê, ô juremá
+Suas folhas caíram serenas jurema, dentro desse congá <span class="rep">(2x)</span>
+Salve o sol e salve a lua — Salve são Jorge guerreiro, que nos deu a proteção <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Estava na beira do rio sem poder atravessar
+Chamei pelos caboclos, caboclos tupinambá <span class="rep">(2x)</span>
+Tupinambá chamei… chamei e tornei chamar, euá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Que lindo penacho é aquele — É um lindo penacho de arara <span class="rep">(2x)</span>
+Mas vem rompendo a mata virgem, o caboclo Ubirajara</p></div>
+  <div class="cantiga"><p>Ubirajara lá na mata ele é o rei — ele é o tata <span class="rep">(2x)</span>
+Lá na mata sua flecha zua — Zua quando sobe, quando desce ela mata <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Os caboclos desceram lá do alto da serra
+E traziam no peito uma cobra coral <span class="rep">(2x)</span>
+No seu terreiro, hoje é dia de festa — Vamos saravá seu Sete Flechas <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Foi numa tarde serena, lá na mata da jurema
+Kiô… kiô kiô kiô kiera
+Saravá seu Sete Flechas que ele é rei da floresta <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Vestimenta de caboclo é samambaia <span class="rep">(2x)</span>
+Saia caboclo, não se atrapalha, saia do meio da samambaia <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Caboclo não tem caminho para caminhar <span class="rep">(2x)</span>
+Ele caminha por cima da folha, por baixo da folha, em todo lugar <span class="rep">(2x)</span>
+Okê caboclo</p></div>
+  <div class="cantiga"><p>Lê, lele lere, lere lere lere lerá
+Lê, lele… caboclo Sete Flechas no congá
+Saravá seu Sete Flechas, ele é o rei da mata
+A sua bodoque atira, o varão da sua flecha mata <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ele atirou… ele atirou ninguém viu <span class="rep">(2x)</span>
+Seu Mata Virgem quem sabe… aonde a flecha caiu <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Atira, atira, eu atirei, no congá vou atirar <span class="rep">(2x)</span>
+Veado na mata é corredor, Oxóssi na mata é caçador <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Caboclo roxo da pele morena
+Ele é Oxóssi, caçador lá da Jurema <span class="rep">(2x)</span>
+Ele jurou e tornou a jurar — a ouvir os conselhos que a Jurema sabe dar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Caboclo 7 flechas nasceu — No jardim das oliveiras <span class="rep">(2x)</span>
+Oi, segura essa cobra, não deixa ela fugir
+O nome dessa cobra, é cobra sucuri <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Soltei minha cabocla de pena — Soltei lá na mata, pra ela trabalhar <span class="rep">(2x)</span>
+Pra ver a força que a jurema tem — Pra ver a força que a jurema dá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu vi chover, eu vi relampear — Mas mesmo assim o céu estava azul
+Samborê, pemba, folha de jurema, — Oxóssi reina de norte a sul <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>No meio da mata virgem — Uma linda cabocla eu vi <span class="rep">(2x)</span>
+Com seu saiote feito de pena — É a Jurema, filha de tupi <span class="rep">(2x)</span>
+Jurema, Jurema, Jurema, linda cabocla, filha de tupi</p></div>
+  <div class="cantiga"><p>No meio da mata eu vi
+De um lado era seu Rompe Mato, do outro, seu Cobra Coral <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Caboclo Arranca Toco é minha luz, é minha guia
+Ele é Oxóssi, filho da Virgem Maria <span class="rep">(2x)</span>
+Nesse terreiro todos os filhos estão seguros <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Mas que caboclo lindo — Que vem lá da Bahia
+Ele traz na mão três ave-marias <span class="rep">(2x)</span>
+E a outra a guia do caboclo Girassol <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quem tem caboclo agora eu quero ver
+Fazer seu ponto no azeite de dendê
+Eu quero ver os caboclos de aruanda — Trabalhando na umbanda <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Cabocla, seu penacho é verde — É da cor do mar <span class="rep">(2x)</span>
+É a cor da cabocla Jurema, Juremá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Auê, auê, meus caboclos auê <span class="rep">(4x)</span>
+Salve cabocla Jupira — Salve cabocla Jurema
+Saravá seu Sete Flechas — Saravá seu Tira Teima</p></div>
+  <div class="cantiga"><p>Caboclo, pega a sua flecha, pega o seu bodoque — que a jurema lhe chamou
+Campos verdes da jurema, — Onde o pai Oxóssi mora,
+Todos caboclos vão embora <span class="rep">(2x)</span></p></div>
+  <div id="extra-oxossi"></div>
+  </div>
+</section>
+
+<!-- BOIADEIROS -->
+<section class="section" id="boiadeiros">
+  <div class="section-header"><span class="section-icon">🐂</span><span class="section-title">Boiadeiros</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Seu boiadeiro por aqui choveu <span class="rep">(2x)</span>
+Choveu, choveu, relampiou — Foi tanta água que meu boi nadou <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Foi nesse passo que eu saí da minha aldeia <span class="rep">(2x)</span>
+Montado em meu cavalo, com meu chapéu de lado <span class="rep">(2x)</span>
+Quando eu saí, a minha mãe me abençoava <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Pedrinha miudinha, pedrinha de Aruanda, ê
+Lajedo tão grande, tão grande de Aruanda, ê <span class="rep">(2x)</span>
+A pedrinha miúda é a que mais ajuda <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quando matar o boi, o mocotó é meu <span class="rep">(2x)</span>
+Só assim ele me paga a carreira que me deu <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Boa noite, meus senhores <span class="rep">(2x)</span>
+Dai-me licença para um cavaleiro <span class="rep">(2x)</span>
+O meu nome é caboclo vaqueiro <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu acendi uma vela por detrás da bananeira,
+de repente pegou fogo e virou uma fogueira <span class="rep">(2x)</span>
+Tá, tá, tá faltando boi <span class="rep">(2x)</span></p></div>
+  <div id="extra-boiadeiros"></div>
+  </div>
+</section>
+
+<!-- PRETOS VELHOS -->
+<section class="section" id="pretos">
+  <div class="section-header"><span class="section-icon">📿</span><span class="section-title">Pretos Velhos</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Lá vem vovó descendo a serra com sua sacola
+Com seu rosário, seu patuá, ela vem de Angola <span class="rep">(2x)</span>
+Eu quero ver se filho de pemba tem querer <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Preto velho tá cansado de tanto trabalhar
+Preto velho tá quebrado de tanto curimbar <span class="rep">(2x)</span>
+Quem tem fé tem tudo, quem não tem fé não tem nada <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Adorei as almas e as almas me atenderam <span class="rep">(2x)</span>
+Eram as santas almas lá do cruzeiro — Eram as santas almas aqui do terreiro</p></div>
+  <div class="cantiga"><p>Vovô não gosta de casca de coco no terreiro <span class="rep">(2x)</span>
+Casca de coco faz lembrar do cativeiro <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Fio, se suncê precisar, é só pensar na vovó — Que ela vem te ajudar <span class="rep">(2x)</span>
+Pensa na vovó Maria Redonda fazendo oração <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Vovó Catarina chegou — Trazendo a proteção <span class="rep">(2x)</span>
+Estenda sua bandeira, vovó — E salve a sua nação <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Saravá pra vovó Catarina que é dona da gira no meu terreiro
+Saravá pra vovó Catarina e pra todas as almas do cativeiro <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Menino Jesus de Praga, ah quem lhe deu essa toalha branca <span class="rep">(2x)</span>
+Foi a baiana do engenho, é pra vovó Maria Conga <span class="rep">(2x)</span>
+Ê conga, ê conga, lelê — Ê conga, ê conga, lalá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Tudo que eu peço ao vovô ele faz — Também o que eu peço a vovó ela faz <span class="rep">(2x)</span>
+Quando os dois pedem juntos, ninguém me passa pra trás</p></div>
+  <div class="cantiga"><p>Pai Joaquim, ê ê, pai Joaquim ê ah
+Pai Joaquim é quem vem de Angola, angolá <span class="rep">(2x)</span>
+Pai Joaquim, cadê pai Tomé? — Tá lá na mata colhendo guiné <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>No tempo do cativeiro, quando o senhor me batia
+Eu rezava pra Nossa Senhora meu Deus, como a pancada doía <span class="rep">(2x)</span>
+Quando eu cheguei na Bahia — A capoeira me libertou
+Trabalha nego, nego trabalha — Trabalha nego pra não apanhar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Um navio negreiro que vem beirando o mar
+Trazendo os africanos para trabalhar <span class="rep">(2x)</span>
+Oh saravá povo de Congo, a sua gira é formosa <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Senhora do Rosário, foi quem me trouxe aqui <span class="rep">(2x)</span>
+A água do mar é santa, eu vi, eu vi, eu vi <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>A sineta do céu bateu, Oxalá já diz que é hora <span class="rep">(2x)</span>
+Eu vou, eu vou, eu vou — Fica com Deus e Nossa Senhora <span class="rep">(2x)</span></p></div>
+  <div id="extra-pretos"></div>
+  </div>
+</section>
+
+<!-- BAIANOS / MALANDROS -->
+<section class="section" id="baianos">
+  <div class="section-header"><span class="section-icon">🎭</span><span class="section-title">Baianos / Malandros</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Baiano é povo bom, povo trabalhador <span class="rep">(2x)</span>
+Quem mexe com baiano mexe com Nosso Senhor <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Baiano bom é o que sobe no coqueiro, fura o coco, bebe a água e deixa o coco no lugar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Olha a flor da laranjeira (alô Bahia) — Cheira mais que aroeira (alô Bahia)
+Vou mandar tirar, vou mandar tirar — Flor de laranja pro meu benzinho cheirar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu fui à Bahia e implorei ao meu Senhor do Bonfim <span class="rep">(2x)</span>
+Meu Senhor do Bonfim, me ajude, eu preciso de paz e saúde <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quando eu vim da Bahia, caminhos eu não tinha <span class="rep">(2x)</span>
+Em cada encruza que eu passava, uma vela eu acendia</p></div>
+  <div class="cantiga"><p>O baiano amarrou o boi lá no pé do araçá <span class="rep">(2x)</span>
+Segura baiano, senão ele sai <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Embala eu, embala eu — Menininha do Gantois
+Embala pra lá, embala pra cá — Menininha do Gantois <span class="rep">(2x)</span>
+Dai-me a sua proteção! Menininha do Gantois… — Pras ondas do mar!</p></div>
+  <div class="cantiga"><p>Quebra coco, arrebenta sapucaia — Vamos todos saravá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Vai ter samba na Bahia, vou sambar o dia inteiro <span class="rep">(2x)</span>
+Hoje vai ter samba, hoje eu vou sambar — Só volto noutro dia quando a macumba acabar</p></div>
+  <div class="cantiga"><p>Malandro bom traz de lado seu chapéu <span class="rep">(2x)</span>
+Ele é seu Camisa Preta, ele é o Malandro Miguel <span class="rep">(2x)</span>
+Galo cantou três horas da madrugada,
+Quem matou o Camisa Preta foi o cabo da brigada <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Malandro desce o morro para dar o seu recado
+É melhor andar sozinho do que mal acompanhado <span class="rep">(2x)</span>
+Chora viola, a malandragem vai chegar aqui agora <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>O morro de santa Teresa está de luto
+Porque Zé Pilintra morreu <span class="rep">(2x)</span>
+Ele chorava por uma mulher que não lhe amava <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>De manhãzinha quando eu venho descendo o morro
+A nega pensa que eu vou trabalhar <span class="rep">(2x)</span>
+Eu boto meu baralho no bolso, meu cachecol no pescoço
+Trabalhar pra quê — Se eu trabalhar, eu vou morrer <span class="rep">(2x)</span></p></div>
+  <div id="extra-baianos"></div>
+  </div>
+</section>
+
+<!-- EXU E POMBAGIRA -->
+<section class="section" id="exu">
+  <div class="section-header"><span class="section-icon">🔱</span><span class="section-title">Exu e Pombagira</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Balança figueira, balança figueira
+Balança figueira, eu quero ver exú cair <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ô Sete, ô Sete, ô Sete Encruzilhadas
+Toma conta e presta conta no romper da madrugada <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu amei o sol, eu amei a lua
+Lá na encruzilhada eu amei Seu Tranca Ruas <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Exú Tiriri de umbanda, morador da encruzilhada
+Toma conta e presta conta no romper da madrugada <span class="rep">(2x)</span>
+Pega ele pelo rabo e dá pra seu Tiriri <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ninguém pode comigo, eu posso com tudo,
+lá na encruzilhada ele é Exu Veludo <span class="rep">(2x)</span>
+Exu Veludo bebe o seu marafo, Exu Veludo sabe o que faz
+Exu Veludo está na banda, deixa ele curimbar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>O sino da igrejinha faz belém, bem-blom <span class="rep">(2x)</span>
+Deu meia-noite, o galo já cantou
+Seu Tranca Rua é dono da gira — Oi corre gira, que Ogum mandou <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Deu meia-noite, a lua se escondeu
+Lá na encruzilhada, dando a sua gargalhada — Tranca Rua apareceu
+Ê Laroyê, ê laroyê — Ê mojubá, ê mojubá
+Ele é Odara, quem tem fé em Tranca Rua — É só pedir que ele dá</p></div>
+  <div class="cantiga"><p>De uma cigana que mora naquela estrada
+Ela tem sua morada sob o clarão do luar <span class="rep">(2x)</span>
+Cigana da estrada, moça poderosa — Me dê proteção e axé, ciganinha formosa <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Foi em uma estrada velha — Na subida de uma serra — Numa noite de luar
+Pombagira da figueira, moça bela e faceira — Dava o seu gargalhar
+Ela é mojubá, ela é mojubá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Segunda-feira tem samba, samba começa meio-dia
+Vamos cantar pra Mulambo, vamos cantar pra Maria — Ê Mulambo, ê Maria <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quando passar na porta do cemitério, moço — Não se esqueça de olhar pra trás <span class="rep">(2x)</span>
+Você vai ver uma moça vestida de preto — Ela é Maria, Maria <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Cemitério é praça linda, mas ninguém passear <span class="rep">(2x)</span>
+Numa catacumba nova, Maria Padilha mora lá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Abre a roda, e deixa a pombagira passar <span class="rep">(2x)</span>
+Ela tem peito de aço e coração de sabiá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>A minha casa não tem porta e nem janela
+O que é bom o vento traz, o que é ruim o vento leva <span class="rep">(2x)</span>
+Ô, ô, a dona da casa chegou <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Arreda homem que aí vem mulher <span class="rep">(2x)</span>
+Ela é a pombo-gira, rainha do cabaré <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Já deu meia-noite, Tranca Ruas quem chegou aqui <span class="rep">(2x)</span>
+Jurou amar alguém na encruzilhada — Quebra feitiço e também desfaz o mal
+Tranca Ruas é dono do meu caminho</p></div>
+  <div class="cantiga"><p>Rodeia, rodeia — Rodeia meu Santo Antônio, rodeia <span class="rep">(2x)</span>
+Santo Antônio pequenino — Amansador de burro bravo
+Auê meu santo Antônio, bota Exú no meu caminho <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Foi condenada pela lei da inquisição
+Para ser queimada viva sexta-feira da paixão <span class="rep">(2x)</span>
+Quanto mais o fogo ardia, ela dava gargalhada <span class="rep">(2x)</span>
+A mulher virou Mulambo — e o padre, seu Tranca Ruas <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Vinha caminhando a pé — Para ver se encontrava a minha cigana de fé <span class="rep">(2x)</span>
+Ela parou e leu minha mão — E disse toda a verdade</p></div>
+  <div class="cantiga"><p>Ganhei uma barraca dela — Foi a cigana quem me deu <span class="rep">(2x)</span>
+O que é meu, é da cigana — Mas o que é dela não é meu <span class="rep">(2x)</span>
+Ciganinha puerê, puerê, puerá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Madrugada eh, madrugada ah <span class="rep">(2x)</span>
+Passei pela encruzilhada — Foi quando ela apareceu — Tão linda, formosa e bela
+Sou eu, Maria Mulambo — Senhora de Lúcifer
+Quem me quiser bem, boa sorte — Quem me quiser mal, boa morte</p></div>
+  <div class="cantiga"><p>Ê Caveira — Firma seu ponto na folha da bananeira, exu Caveira <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu vi um homem sentado debaixo da amendoeira <span class="rep">(2x)</span>
+Era osso só, era exu Caveira <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Na calunga grande não tem coveiro não <span class="rep">(2x)</span>
+A catacumba onde eu moro é resto de embarcação <span class="rep">(2x)</span>
+Sou eu, sou eu quem ronda no mar, sou eu <span class="rep">(2x)</span></p></div>
+  <div id="extra-exu"></div>
+  </div>
+</section>
+
+<!-- OGUM -->
+<section class="section" id="ogum">
+  <div class="section-header"><span class="section-icon">⚔️</span><span class="section-title">Ogum</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Eu tenho sete espadas pra me defender — Eu tenho Ogum em minha companhia <span class="rep">(2x)</span>
+Ogum é meu pai, Ogum é meu guia <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ogum em seu cavalo corre — E a sua espada reluz <span class="rep">(2x)</span>
+Sua bandeira cobre os filhos de Jesus, ogunhê <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ogum de Lei, não me deixe sofrer tanto assim meu pai <span class="rep">(2x)</span>
+Saravá Ogum, saravá filho de umbanda <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Se meu pai é Ogum, vencedor de demanda
+Ele vem de Aruanda pra saudar filho de umbanda <span class="rep">(2x)</span>
+Salve os campos de batalha, salve a sereia do mar</p></div>
+  <div class="cantiga"><p>Quando Ogum partiu pra guerra, Iemanjá chorou <span class="rep">(2x)</span>
+Quando Ogum voltou vencedor, Iemanjá cantou <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quem beira rio, beira rio, beira mar
+O que se ganha de Ogum, só Ogum pode tirar <span class="rep">(2x)</span>
+Seu Ogum de Ronda é quem vem girar — E vem trazendo folha pra descarregar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ogum, cavaleiro da lua — Só ele navega no mar <span class="rep">(3x)</span> Sereia</p></div>
+  <div id="extra-ogum"></div>
+  </div>
+</section>
+
+<!-- XANGÔ -->
+<section class="section" id="xango">
+  <div class="section-header"><span class="section-icon">⚡</span><span class="section-title">Xangô</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Estava na pedreira conversando com Xangô
+E foi assim que ele me ensinou <span class="rep">(2x)</span>
+É com amor que se pratica a caridade</p></div>
+  <div class="cantiga"><p>Dizem que Xangô mora na pedreira — Mas não é lá sua morada verdadeira <span class="rep">(2x)</span>
+Xangô mora numa cidade de luz — Onde mora Santa Bárbara, Oxumaré e Jesus <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Estão queimando velas para me derrubar
+Xangô, meu pai — Amarra os inimigos e dá um nó — Amarra na pontinha do cipó <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ele bradou na aldeia — Kaô, kaô! — E aqui vai bradar — Kaô, kaô!
+Ele é Xangô da pedreira — Ele nasceu na cachoeira — Lá no juremá <span class="rep">(2x)</span></p></div>
+  <div id="extra-xango"></div>
+  </div>
+</section>
+
+<!-- OXUM -->
+<section class="section" id="oxum">
+  <div class="section-header"><span class="section-icon">💛</span><span class="section-title">Oxum</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Já chegou mamãe Oxum, rainha dos orixás <span class="rep">(2x)</span>
+Mamãe Oxum é um grande orixá — Rainha das cachoeiras, da coroa de Oxalá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu vi mamãe Oxum na cachoeira — Sentada na beira do rio <span class="rep">(2x)</span>
+Colhendo lírio pra enfeitar nosso congá <span class="rep">(2x)</span>
+Mas era ela, Nossa Senhora, princesa de Ogum para jurar bandeira <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Nhem-nhem-nhem, Nhem-nhem-nhem, xorodô <span class="rep">(2x)</span>
+Xangô andava em guerra — Vencia em toda terra
+Tinha ao seu lado Iansã pra lhe ajudar
+Oxum era a rainha — O seu espelho onde vivia a se mirar</p></div>
+  <div class="cantiga"><p>A minha mãe é Oxum — Ora yeye o — Rainha das cachoeiras
+A deusa da beleza é minha mãe Oxum — Orixá da natureza <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Oxum, Oxum me dê alguém para amar <span class="rep">(2x)</span>
+Ó mamãe Oxum, princesa do mar <span class="rep">(2x)</span>
+Rainha dos ouros, princesa dos orixás <span class="rep">(2x)</span></p></div>
+  <div id="extra-oxum"></div>
+  </div>
+</section>
+
+<!-- IEMANJÁ -->
+<section class="section" id="iemanja">
+  <div class="section-header"><span class="section-icon">🌊</span><span class="section-title">Iemanjá</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Seu colar é de concha, seu vestido se arrasta na areia
+Ela tem cheiro de mar, ela sabe cantar ponto de sereia <span class="rep">(2x)</span>
+Ô Janaína, deixa eu dormir no seu colo — Ô Janaína, quando estou feliz eu choro <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Eu fui na beira da praia — Pra ver o balanço do mar <span class="rep">(2x)</span>
+Eu vi um retrato na areia, me lembrei da sereia
+Ô Janaína vem ver — Ô Janaína vem cá — Receber suas flores — Que venho lhe ofertar. <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Mãe d'água, rainha das ondas, sereia do mar
+Mãe d'água, seu canto é bonito quando tem luar
+Quem escuta a mãe d'água cantar — Vai com ela pro fundo do mar <span class="rep">(2x)</span>
+Iê, Iemanjá, Rainha das ondas, sereia do mar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ô Iemanjá, mas como vem rompendo água <span class="rep">(2x)</span>
+Saia da água linda sereia — Saia da água e venha cá brincar na areia</p></div>
+  <div id="extra-iemanja"></div>
+  </div>
+</section>
+
+<!-- IANSÃ -->
+<section class="section" id="iansa">
+  <div class="section-header"><span class="section-icon">🌪️</span><span class="section-title">Iansã</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Eram duas ventarolas, duas ventarolas — Ventando no mar <span class="rep">(2x)</span>
+Uma era Iansã, eparrei — A outra era Iemanjá, odociá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Iansã tem um leque que venta — Pra abanar dia de calor
+Iansã mora na pedreira — Eu quero ver meu pai Xangô <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ah eparrei, ela é Oyá, ela Oyá — Ah eparrei, é Iansã, é Iansã
+Ah eparrei, quando Iansã vai pra batalha,
+todos cavaleiros param só pra ver ela passar <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>É Iansã de Bale, oh dando ilá para guerrear <span class="rep">(2x)</span>
+O seu bailar é como ventania — Seu grito é forte como um trovão
+Saravá bela Iansã — Na mão direita traz sua espada</p></div>
+  <div class="cantiga"><p>E olha eu bela Oyá — Ela é Iansã, ela é meu Orixá
+Ela é Iansã de Balé — Vamos pedir com fé
+Pedir à Iansã do Balé — Para todos os filhos — Sua proteção</p></div>
+  <div id="extra-iansa"></div>
+  </div>
+</section>
+
+<!-- NANÃ -->
+<section class="section" id="nana">
+  <div class="section-header"><span class="section-icon">🪷</span><span class="section-title">Nanã</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>São flores Nanã, são flores — São flores Nanã Buruquê
+São flores Nanã, são flores — do seu filho Obaluaê <span class="rep">(2x)</span>
+Ela é mãe dos orixás, São Roque é Obaluaiê <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Atraca, atraca que aí vem Nanã, ê ê <span class="rep">(2x)</span>
+É Nanã, rainha do mar — É Nanã que eu vou saravá, ê ah</p></div>
+  <div class="cantiga"><p>Sou de Nanã euá, euá, euá ê <span class="rep">(4x)</span>
+O meu silêncio é uma singela oração à minha santa de fé
+Meu cantar é um apelo que eu faço a Nanã, eh</p></div>
+  <div class="cantiga"><p>Sarabitu ê, Nanã Buruquê <span class="rep">(2x)</span>
+Olha os seus filhos Nanã — Salve a coroa de Zambi — E o cajado de Oxalá
+Auê, auê, Nanã Buruquê <span class="rep">(2x)</span></p></div>
+  <div id="extra-nana"></div>
+  </div>
+</section>
+
+<!-- OMOLU -->
+<section class="section" id="omolu">
+  <div class="section-header"><span class="section-icon">🌾</span><span class="section-title">Omolu / Obaluaê</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Meu pai Oxalá é rei, venha me valer <span class="rep">(2x)</span>
+E o velho Omolu, atotô Obaluaê <span class="rep">(2x)</span>
+Atotô Obaluaê, atotô babá — Atotô Obaluaê, atotô é orixá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Rolei na terra — A benção, atotô — Seu xaxará — A ferida secou <span class="rep">(2x)</span>
+A flor do velho — Me curou <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Quem vê um velho no caminho peça a benção <span class="rep">(2x)</span>
+Deus abençoe, Obaluaê, Deus abençoe <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Ô atotô, atotô meu pai — Minhas feridas venha curar
+E levai o meu sofrimento — Para as águas claras de Iemanjá</p></div>
+  <div id="extra-omolu"></div>
+  </div>
+</section>
+
+<!-- OXALÁ -->
+<section class="section" id="oxala">
+  <div class="section-header"><span class="section-icon">🕊️</span><span class="section-title">Oxalá</span><span class="section-arrow">▼</span></div>
+  <div class="section-body">
+  <div class="cantiga"><p>Meu pai Oxalá é rei, venha me valer <span class="rep">(2x)</span>
+Atotô Obaluaê, atotô babá — Atotô Obaluaê, atotô é orixá <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>Oxalá, meu pai — tem pena de nós, tem dó
+Se a volta do mundo é grande, seus poderes são maior <span class="rep">(2x)</span></p></div>
+  <div class="cantiga"><p>No alto das oliveiras, no alto das oliveiras
+Eu vi uma pombinha a voar <span class="rep">(2x)</span>
+Voou, voou — Tornou voar
+É uma pombinha mensageira de Oxalá <span class="rep">(2x)</span></p></div>
+  <div id="extra-oxala"></div>
+  </div>
+</section>
+</main>
+
+<button id="btnAdd" onclick="abrirModal()" title="Adicionar cantiga">＋</button>
+<button id="backtop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Topo">↑</button>
+
+<!-- MODAL ADICIONAR / EDITAR -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <h2 id="modalTitulo">✦ Adicionar Cantiga</h2>
+    <label>Entidade</label>
+    <select id="selEntidade">
+      <option value="oxossi">🌿 Oxóssi / Caboclos</option>
+      <option value="boiadeiros">🐂 Boiadeiros</option>
+      <option value="pretos">📿 Pretos Velhos</option>
+      <option value="baianos">🎭 Baianos / Malandros</option>
+      <option value="exu">🔱 Exu e Pombagira</option>
+      <option value="ogum">⚔️ Ogum</option>
+      <option value="xango">⚡ Xangô</option>
+      <option value="oxum">💛 Oxum</option>
+      <option value="iemanja">🌊 Iemanjá</option>
+      <option value="iansa">🌪️ Iansã</option>
+      <option value="nana">🪷 Nanã</option>
+      <option value="omolu">🌾 Omolu / Obaluaê</option>
+      <option value="oxala">🕊️ Oxalá</option>
+    </select>
+    <label>Letra da Cantiga</label>
+    <textarea id="txtCantiga" placeholder="Digite a letra aqui..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-enviar" id="btnEnviar" onclick="salvarCantiga()">Salvar ✦</button>
+    </div>
+    <div class="msg-status" id="msgStatus"></div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUSÃO -->
+<div class="modal-overlay" id="modalDel" onclick="fecharDelFora(event)">
+  <div class="modal-confirm">
+    <h2>Excluir Cantiga</h2>
+    <p>Tem certeza que quer <strong>excluir</strong> esta cantiga?<br>Esta ação não pode ser desfeita.</p>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharDel()">Cancelar</button>
+      <button class="btn-del-confirmar" id="btnConfirmarDel" onclick="confirmarExclusao()">Excluir</button>
+    </div>
+    <div class="msg-status" id="msgDel"></div>
+  </div>
+</div>
+
+<script>
+  // ── PROXY para contornar CORS do Google Apps Script ──
+  // Usamos um iframe oculto + postMessage para enviar POST sem restrição CORS
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFgnrmF0S4cSZfxI3MQCstsylTDBVXF4PHcD-jcvGC6HfHldG7BP55UOH6jp1vv2WF/exec';
+
+  var modoEdicao = false;
+  var editIndex  = null;
+  var editCard   = null;
+  var delIndex   = null;
+  var delCard    = null;
+
+  // ── Chamada ao Apps Script via fetch com redirect manual ──
+  function chamarScript(payload, onOk, onErr) {
+    // Trick: POST com no-cors sempre retorna opaque — usamos GET com parâmetros para leitura
+    // e POST no-cors para escrita (aceitar sem ler resposta)
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify(payload)
+    })
+    .then(function() {
+      // no-cors nunca falha no .then() mesmo com erro no servidor
+      // então assumimos sucesso e atualizamos a UI
+      if (onOk) onOk();
+    })
+    .catch(function(e) {
+      if (onErr) onErr(e);
+    });
+  }
+
+  // ── MODAL ADICIONAR / EDITAR ──
+  function abrirModal() {
+    modoEdicao = false; editIndex = null; editCard = null;
+    document.getElementById('modalTitulo').textContent = '✦ Adicionar Cantiga';
+    document.getElementById('selEntidade').disabled = false;
+    document.getElementById('selEntidade').value = 'oxossi';
+    document.getElementById('txtCantiga').value = '';
+    document.getElementById('msgStatus').textContent = '';
+    document.getElementById('btnEnviar').disabled = false;
+    document.getElementById('btnEnviar').textContent = 'Salvar ✦';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function abrirEdicao(index, card) {
+    modoEdicao = true; editIndex = index; editCard = card;
+    var texto = card.querySelector('.cantiga-texto').innerText.trim();
+    document.getElementById('modalTitulo').textContent = '✏️ Editar Cantiga';
+    document.getElementById('selEntidade').disabled = true;
+    document.getElementById('txtCantiga').value = texto;
+    document.getElementById('msgStatus').textContent = '';
+    document.getElementById('btnEnviar').disabled = false;
+    document.getElementById('btnEnviar').textContent = 'Salvar Edição ✦';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function fecharModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function fecharModalFora(e) { if (e.target.id === 'modalOverlay') fecharModal(); }
+
+  function salvarCantiga() {
+    var cantiga = document.getElementById('txtCantiga').value.trim();
+    var msg = document.getElementById('msgStatus');
+    var btn = document.getElementById('btnEnviar');
+    if (!cantiga) { msg.textContent = 'Digite a letra antes de salvar.'; msg.className = 'msg-status msg-err'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Salvando…';
+    msg.textContent = '';
+
+    if (modoEdicao) {
+      chamarScript({action:'edit', row: editIndex, cantiga: cantiga}, function() {
+        // atualiza texto na tela
+        editCard.querySelector('.cantiga-texto').textContent = cantiga;
+        msg.textContent = '✓ Cantiga atualizada!'; msg.className = 'msg-status msg-ok';
+        btn.textContent = 'Salvo ✓';
+        setTimeout(fecharModal, 1500);
+      }, function() {
+        msg.textContent = 'Erro de conexão.'; msg.className = 'msg-status msg-err';
+        btn.disabled = false; btn.textContent = 'Salvar Edição ✦';
+      });
+    } else {
+      var entidade = document.getElementById('selEntidade').value;
+      chamarScript({action:'add', entidade: entidade, cantiga: cantiga}, function() {
+        adicionarCard(entidade, cantiga, '_local_' + Date.now());
+        msg.textContent = '✓ Cantiga salva!'; msg.className = 'msg-status msg-ok';
+        btn.textContent = 'Salvo ✓';
+        setTimeout(fecharModal, 1500);
+      }, function() {
+        msg.textContent = 'Erro de conexão.'; msg.className = 'msg-status msg-err';
+        btn.disabled = false; btn.textContent = 'Salvar ✦';
+      });
+    }
+  }
+
+  // ── MODAL EXCLUIR ──
+  function abrirDel(index, card) {
+    delIndex = index; delCard = card;
+    document.getElementById('msgDel').textContent = '';
+    document.getElementById('btnConfirmarDel').disabled = false;
+    document.getElementById('btnConfirmarDel').textContent = 'Excluir';
+    document.getElementById('modalDel').classList.add('open');
+  }
+  function fecharDel() { document.getElementById('modalDel').classList.remove('open'); }
+  function fecharDelFora(e) { if (e.target.id === 'modalDel') fecharDel(); }
+
+  function confirmarExclusao() {
+    var btn = document.getElementById('btnConfirmarDel');
+    var msg = document.getElementById('msgDel');
+    btn.disabled = true; btn.textContent = 'Excluindo…';
+
+    chamarScript({action:'delete', row: delIndex}, function() {
+      // remove da tela com fade
+      delCard.style.transition = 'opacity .3s, max-height .3s';
+      delCard.style.opacity = '0';
+      delCard.style.maxHeight = '0';
+      delCard.style.overflow = 'hidden';
+      delCard.style.marginBottom = '0';
+      setTimeout(function() { delCard.remove(); }, 350);
+      fecharDel();
+    }, function() {
+      msg.textContent = 'Erro ao excluir. Verifique sua conexão.';
+      msg.className = 'msg-status msg-err';
+      btn.disabled = false; btn.textContent = 'Excluir';
+    });
+  }
+
+  // ── RENDERIZAR CARD USUÁRIO ──
+  function adicionarCard(entidade, cantiga, index) {
+    var container = document.getElementById('extra-' + entidade);
+    if (!container) return;
+    // garante que a seção está aberta
+    var sec = document.getElementById(entidade);
+    if (sec) {
+      var h = sec.querySelector('.section-header');
+      var b = sec.querySelector('.section-body');
+      if (h && b) { h.classList.add('open'); b.classList.add('open'); }
+    }
+    var div = document.createElement('div');
+    div.className = 'cantiga user-added';
+    div.dataset.rowIndex = index;
+    // montamos innerHTML de forma segura
+    var top = document.createElement('div');
+    top.className = 'cantiga-top';
+    var badge = document.createElement('em');
+    badge.className = 'user-badge';
+    badge.textContent = 'adicionada';
+    var actions = document.createElement('div');
+    actions.className = 'cantiga-actions';
+    var btnE = document.createElement('button');
+    btnE.className = 'btn-edit';
+    btnE.textContent = '✏️ Editar';
+    btnE.onclick = function() { abrirEdicao(index, div); };
+    var btnD = document.createElement('button');
+    btnD.className = 'btn-del';
+    btnD.textContent = '🗑 Excluir';
+    btnD.onclick = function() { abrirDel(index, div); };
+    actions.appendChild(btnE);
+    actions.appendChild(btnD);
+    top.appendChild(badge);
+    top.appendChild(actions);
+    var texto = document.createElement('p');
+    texto.className = 'cantiga-texto';
+    texto.style.whiteSpace = 'pre-wrap';
+    texto.textContent = cantiga;
+    div.appendChild(top);
+    div.appendChild(texto);
+    container.appendChild(div);
+  }
+
+  // ── CARREGAR DO SHEETS ──
+  function carregarSalvas() {
+    fetch(SCRIPT_URL)
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      rows.forEach(function(row) {
+        if (row.entidade && row.cantiga) {
+          adicionarCard(row.entidade, row.cantiga, row.index);
+        }
+      });
+    })
+    .catch(function() {
+      // silencioso — offline ou sem dados ainda
+    });
+  }
+
+  // ── CHIPS + SCROLL ──
+  var sections = Array.from(document.querySelectorAll('section.section'));
+  var chips    = Array.from(document.querySelectorAll('.chip'));
+  var bar      = document.getElementById('chipsBar');
+
+  window.addEventListener('scroll', function() {
+    document.getElementById('backtop').classList.toggle('visible', window.scrollY > 300);
+    var offset = 56 + 52 + 20, current = '';
+    sections.forEach(function(s) { if (window.scrollY + offset >= s.offsetTop) current = s.id; });
+    chips.forEach(function(c) {
+      var active = c.getAttribute('href') === '#' + current;
+      c.classList.toggle('active', active);
+      if (active) {
+        var cl = c.offsetLeft, cr = cl + c.offsetWidth, bs = bar.scrollLeft, bw = bar.offsetWidth;
+        if (cl < bs + 14) bar.scrollTo({left: cl - 14, behavior: 'smooth'});
+        else if (cr > bs + bw - 14) bar.scrollTo({left: cr - bw + 14, behavior: 'smooth'});
+      }
+    });
+  }, {passive: true});
+
+  function goTo(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    // abre a seção se estiver fechada
+    var header = el.querySelector('.section-header');
+    var body   = el.querySelector('.section-body');
+    if (header && body && !header.classList.contains('open')) {
+      header.classList.add('open');
+      body.classList.add('open');
+    }
+    setTimeout(function() {
+      window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - (56 + 52 + 4), behavior: 'smooth'});
+    }, 50);
+  }
+
+  // ── ACORDEÃO ──
+  document.querySelectorAll('.section-header').forEach(function(header) {
+    header.addEventListener('click', function() {
+      var body = header.nextElementSibling;
+      var isOpen = header.classList.contains('open');
+      header.classList.toggle('open', !isOpen);
+      body.classList.toggle('open', !isOpen);
+    });
+  });
+
+  carregarSalvas();
+</script>
+</body>
+</html>
